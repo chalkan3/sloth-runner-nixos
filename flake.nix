@@ -15,38 +15,8 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        # Build sloth-runner package
-        sloth-runner = pkgs.buildGoModule rec {
-          pname = "sloth-runner";
-          version = "0.1.0";
-
-          # Point to parent directory (main sloth-runner repo)
-          src = ../.;
-
-          vendorHash = null; # Will be calculated on first build
-
-          subPackages = [ "cmd/sloth-runner" ];
-
-          # CGO is required for SQLite
-          CGO_ENABLED = 1;
-
-          buildInputs = with pkgs; [ sqlite ];
-          nativeBuildInputs = with pkgs; [ pkg-config ];
-
-          ldflags = [
-            "-s"
-            "-w"
-            "-X main.version=${version}"
-          ];
-
-          meta = with pkgs.lib; {
-            description = "Lua-based task automation and orchestration system";
-            homepage = "https://github.com/chalkan3/sloth-runner";
-            license = licenses.mit;
-            platforms = platforms.linux ++ platforms.darwin;
-            maintainers = [ ];
-          };
-        };
+        # Import sloth-runner package from packages/
+        sloth-runner = pkgs.callPackage ./packages/sloth-runner.nix { };
 
       in
       {
@@ -102,7 +72,11 @@
         master-example = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            # Add the overlay to make pkgs.sloth-runner available
+            { nixpkgs.overlays = [ self.overlays.default ]; }
+            # Import the module
             self.nixosModules.default
+            # Configure the service
             {
               services.sloth-runner = {
                 enable = true;
@@ -119,7 +93,11 @@
         agent-example = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           modules = [
+            # Add the overlay to make pkgs.sloth-runner available
+            { nixpkgs.overlays = [ self.overlays.default ]; }
+            # Import the module
             self.nixosModules.default
+            # Configure the service
             {
               services.sloth-runner = {
                 enable = true;

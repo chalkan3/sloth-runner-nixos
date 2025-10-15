@@ -5,37 +5,6 @@ with lib;
 let
   cfg = config.services.sloth-runner;
 
-  # Build sloth-runner package
-  sloth-runner = pkgs.buildGoModule rec {
-    pname = "sloth-runner";
-    version = "0.1.0";
-
-    src = ../../.;
-
-    vendorHash = null; # Will be calculated automatically
-
-    subPackages = [ "cmd/sloth-runner" ];
-
-    # CGO is required for SQLite support
-    CGO_ENABLED = 1;
-
-    buildInputs = with pkgs; [ sqlite ];
-
-    nativeBuildInputs = with pkgs; [ pkg-config ];
-
-    ldflags = [
-      "-s" "-w"
-      "-X main.version=${version}"
-    ];
-
-    meta = with lib; {
-      description = "A Lua-based task automation and orchestration system";
-      homepage = "https://github.com/chalkan3/sloth-runner";
-      license = licenses.mit;
-      platforms = platforms.linux ++ platforms.darwin;
-    };
-  };
-
   # Generate configuration file
   configFile = pkgs.writeText "sloth-runner.yaml" ''
     mode: ${cfg.mode}
@@ -76,9 +45,27 @@ in {
 
     package = mkOption {
       type = types.package;
-      default = sloth-runner;
+      default = pkgs.sloth-runner or (throw ''
+        sloth-runner package not found in pkgs.
+        Please ensure you've added the sloth-runner-nixos overlay to your nixpkgs, or
+        explicitly set services.sloth-runner.package to a sloth-runner package.
+
+        Example with overlay:
+          nixpkgs.overlays = [ sloth-runner-nixos.overlays.default ];
+
+        Example with explicit package:
+          services.sloth-runner.package = pkgs.callPackage ./path/to/sloth-runner.nix { };
+      '');
       defaultText = literalExpression "pkgs.sloth-runner";
-      description = "The sloth-runner package to use.";
+      description = ''
+        The sloth-runner package to use.
+
+        When using with Nix Flakes, the package is automatically available via the overlay.
+        For traditional NixOS configurations, you'll need to either:
+        - Add the overlay to your configuration
+        - Import and build the package manually
+        - Set this option explicitly
+      '';
     };
 
     master = mkOption {
