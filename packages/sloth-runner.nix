@@ -12,11 +12,14 @@ buildGoModule rec {
   src = fetchFromGitHub {
     owner = "chalkan3";
     repo = "sloth-runner";
-    rev = "master";  # Or use a specific tag/commit
-    sha256 = lib.fakeSha256;  # Will need to be updated with actual hash
+    rev = "030207bfadbd37acc659de3262720b99e97f278a";  # Pin to specific commit
+    sha256 = "sha256-1wk2qvhpbgjj82wh3mda95ch8n7d6kbpknlr2bnfc2rd0b0s6zgy";
   };
 
-  vendorHash = null; # Update with actual hash after first build
+  # Set to null since the project doesn't vendor dependencies
+  # If Go dependencies change, this may need to be set to a proper hash
+  # Run: nix build .#sloth-runner 2>&1 | grep "got:" to get the correct hash
+  vendorHash = null;
 
   subPackages = [ "cmd/sloth-runner" ];
 
