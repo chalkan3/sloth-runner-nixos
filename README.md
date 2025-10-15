@@ -336,6 +336,55 @@ Advanced configuration for running multiple agents on a single host.
 
 ## Advanced Topics
 
+### Package Options
+
+The module provides two package variants:
+
+#### Binary Package (Default - Recommended)
+
+Downloads pre-compiled binaries from GitHub releases. This is faster and doesn't require Go toolchain:
+
+```nix
+services.sloth-runner = {
+  enable = true;
+  # Uses binary package by default (pkgs.sloth-runner)
+};
+```
+
+**Benefits:**
+- Much faster installation (seconds vs minutes)
+- No compilation required
+- Smaller download size
+- Works on all platforms: x86_64-linux, aarch64-linux, x86_64-darwin, aarch64-darwin
+
+#### Source Package (For Development)
+
+Builds from Go source code. Use this if you need custom patches or unreleased features:
+
+```nix
+services.sloth-runner = {
+  enable = true;
+  package = pkgs.sloth-runner-source;  # Build from source
+};
+```
+
+**When to use:**
+- Testing unreleased features
+- Applying custom patches
+- Contributing to development
+- Building from a fork
+
+Both packages can be accessed independently:
+
+```bash
+# Binary package (fast)
+nix build .#sloth-runner
+nix build .#sloth-runner-bin
+
+# Source package (from Go)
+nix build .#sloth-runner-source
+```
+
 ### Using Secrets
 
 Store sensitive configuration outside the Nix store:
