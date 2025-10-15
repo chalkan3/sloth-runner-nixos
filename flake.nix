@@ -15,15 +15,20 @@
       let
         pkgs = import nixpkgs { inherit system; };
 
-        # Import sloth-runner package from packages/
-        sloth-runner = pkgs.callPackage ./packages/sloth-runner.nix { };
+        # Import sloth-runner packages from packages/
+        # Default is binary package (faster, downloads pre-compiled)
+        sloth-runner-bin = pkgs.callPackage ./packages/sloth-runner-bin.nix { };
+        # Source package for development (slower, builds from Go source)
+        sloth-runner-source = pkgs.callPackage ./packages/sloth-runner.nix { };
 
       in
       {
         # Package outputs
         packages = {
-          default = sloth-runner;
-          sloth-runner = sloth-runner;
+          default = sloth-runner-bin;
+          sloth-runner = sloth-runner-bin;
+          sloth-runner-bin = sloth-runner-bin;
+          sloth-runner-source = sloth-runner-source;
         };
 
         # Development shell
@@ -51,7 +56,7 @@
         # Apps that can be run with 'nix run'
         apps.default = {
           type = "app";
-          program = "${sloth-runner}/bin/sloth-runner";
+          program = "${sloth-runner-bin}/bin/sloth-runner";
         };
       }
     ) // {
