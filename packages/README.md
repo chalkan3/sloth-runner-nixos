@@ -16,17 +16,24 @@ This directory contains the Nix package definition for Sloth Runner.
    git ls-remote https://github.com/chalkan3/sloth-runner.git HEAD
    ```
 
-2. Update the `rev` and `sha256` in `sloth-runner.nix`:
+2. Calculate the new hash in SRI format:
    ```bash
-   # Calculate the new sha256
-   nix-prefetch-url --unpack "https://github.com/chalkan3/sloth-runner/archive/NEW_COMMIT_HASH.tar.gz"
+   # Download and get the base32 hash
+   HASH_BASE32=$(nix-prefetch-url --unpack "https://github.com/chalkan3/sloth-runner/archive/NEW_COMMIT_HASH.tar.gz")
+
+   # Convert to SRI format (base64)
+   nix-hash --type sha256 --to-base64 $HASH_BASE32
    ```
 
-3. Update the file:
+3. Update the file with SRI format hash:
    ```nix
    rev = "NEW_COMMIT_HASH";
-   sha256 = "sha256-HASH_FROM_PREVIOUS_COMMAND";
+   hash = "sha256-BASE64_HASH_HERE";  # Note: "hash" not "sha256"
    ```
+
+**Important**: Modern Nix uses SRI (Subresource Integrity) format:
+- Use `hash = "sha256-...";` (base64 encoding)
+- NOT `sha256 = "...";` (old base32 format)
 
 ### Update vendorHash (if Go dependencies change)
 
@@ -99,7 +106,7 @@ src = fetchFromGitHub {
   owner = "chalkan3";
   repo = "sloth-runner";
   rev = "v0.1.0";  # Use tag
-  sha256 = "sha256-...";  # Calculate with nix-prefetch-url
+  hash = "sha256-...";  # SRI format - calculate with nix-prefetch-url + nix-hash
 };
 ```
 
@@ -107,7 +114,12 @@ src = fetchFromGitHub {
 
 ### Build Fails with "hash mismatch"
 
-The `sha256` hash is incorrect. Recalculate using `nix-prefetch-url`.
+The `hash` is incorrect or in wrong format. Recalculate using:
+```bash
+HASH_BASE32=$(nix-prefetch-url --unpack "https://github.com/chalkan3/sloth-runner/archive/COMMIT_HASH.tar.gz")
+nix-hash --type sha256 --to-base64 $HASH_BASE32
+```
+Then use: `hash = "sha256-BASE64_RESULT";`
 
 ### Build Fails with "vendorHash mismatch"
 

@@ -13,7 +13,7 @@ buildGoModule rec {
     owner = "chalkan3";
     repo = "sloth-runner";
     rev = "030207bfadbd37acc659de3262720b99e97f278a";  # Pin to specific commit
-    sha256 = "sha256-1wk2qvhpbgjj82wh3mda95ch8n7d6kbpknlr2bnfc2rd0b0s6zgy";
+    hash = "sha256-/n2jwQItC+bsEpnaedc07VgEWUmq1QG5QFK+deHGYvI=";  # SRI format
   };
 
   # Set to null since the project doesn't vendor dependencies
